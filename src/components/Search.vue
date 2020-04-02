@@ -1,6 +1,7 @@
 <template>
   <div class="leftcolumn">
-    <h1 v-on="getResult(query)" class="card">Films sorties ce mois</h1>
+     <p>{{lesCritiques}}</p>
+    <h1 v-on="getResult()" class="card">Films sorties ce mois</h1>
     <div v-for="result in results" :key="result.id" class="card">
       <h2>{{result.title}}</h2>
       <div class="container">
@@ -15,6 +16,7 @@
       </div>
     </div>
     <p>{{leJson}}</p>
+
   </div>
 </template>
 <script>
@@ -23,25 +25,34 @@ export default {
   name: "search",
   data() {
     return {
-      query: "2020-03-01",
       results: "",
-      leJson: ""
+      leJson: "",/*Inutile pour le moment mais servira peut etre pour le renvoyer a APMAGWEB */ 
+      lesCritiques:"",
+      hydra:"hydra:member",
+      apiUrl : 'http://localhost:8000',
     };
   },
   methods: {
-    getResult(query) {
+    getResult() {
       axios
         .get(
-          "https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=" +
-            query +
-            "&primary_release_date.lte=2020-03-31&api_key=267e254ca239fe35a8561240834856f7"
+          "https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=2020-03-01&primary_release_date.lte=2020-03-31&api_key=267e254ca239fe35a8561240834856f7"
         )
         .then(response => {
           this.results = response.data.results;
           this.leJson = response;
         });
       console.log(this.results);
+    },
+    getCritique(){
+      axios
+      .get(this.apiUrl+'/api/critiques?page=1')
+      .then(response => (this.lesCritiques = response.data['hydra:member']))
+       console.log(this.lesCritiques);
     }
+  },
+  mounted () {
+    this.getCritique();
   }
 };
 </script>
