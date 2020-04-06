@@ -1,6 +1,8 @@
 <template>
   <div class="leftcolumn">
-     <p>{{lesCritiques}}</p>
+    <!--<p>{{lesCritiques}}</p>-->
+    <!-- fonctionne et affiche bien les avis mettre un if idfilm=idmovie(tmdb)=> afficher-->
+    <p v-for="laCritique in lesCritiques" :key="laCritique.id">{{laCritique.avis}}</p>
     <h1 v-on="getResult()" class="card">Films sorties ce mois</h1>
     <div v-for="result in results" :key="result.id" class="card">
       <h2>{{result.title}}</h2>
@@ -13,30 +15,49 @@
           />
         </div>
         {{result.overview}}
+        <br />
       </div>
     </div>
-    <p>{{leJson}}</p>
-
+    <!--<p>{{leJson}}</p>-->
   </div>
 </template>
 <script>
 import axios from "axios";
+import Vue from 'vue'
+import { Form, HasError, AlertError } from 'vform'
+ 
+Vue.component(HasError.name, HasError)
+Vue.component(AlertError.name, AlertError)
 export default {
-  name: "search",
+  
+  name: "movieslist",
   data() {
     return {
       results: "",
-      leJson: "",/*Inutile pour le moment mais servira peut etre pour le renvoyer a APMAGWEB */ 
-      lesCritiques:"",
-      hydra:"hydra:member",
-      apiUrl : 'http://localhost:8000',
+      leJson:
+        "" /*Inutile pour le moment mais servira peut etre pour le renvoyer a APMAGWEB */,
+      lesCritiques: "",
+      hydra: "hydra:member",
+      apiUrl: "http://localhost:8000",
+      compteur: 1,
+      form: new Form({
+        user: "",
+        password: "",
+        avis: "",
+        note: "",
+        postedAt: "",
+        idFilm: "",
+        nomFilm:"",
+        imageUser:"",
+      })
     };
   },
   methods: {
     getResult() {
       axios
         .get(
-          "https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=2020-03-01&primary_release_date.lte=2020-03-31&api_key=267e254ca239fe35a8561240834856f7"
+          "https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=2020-03-01&"+
+          "primary_release_date.lte=2020-03-31&api_key=267e254ca239fe35a8561240834856f7"
         )
         .then(response => {
           this.results = response.data.results;
@@ -44,14 +65,19 @@ export default {
         });
       console.log(this.results);
     },
-    getCritique(){
+    getCritique() {
       axios
-      .get(this.apiUrl+'/api/critiques?page=1')
-      .then(response => (this.lesCritiques = response.data['hydra:member']))
-       console.log(this.lesCritiques);
-    }
-  },
-  mounted () {
+        .get(this.apiUrl + "/api/critiques?page=1")
+        .then(response => (this.lesCritiques = response.data["hydra:member"]));
+      console.log(this.lesCritiques);
+    },
+    submitCritique() {
+      axios
+        .post(this.apiUrl + "/api/critiques");
+       console.log(this.Form);
+
+  },},
+  mounted() {
     this.getCritique();
   }
 };
